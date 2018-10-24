@@ -10,9 +10,17 @@
         height: 100%;
         width: 100%;
       }
+      .esri-view .esri-directions {
+    position: fixed;
+    right: 15px;
+  }
+  .esri-view .esri-component.esri-attribution {
+    position: fixed;
+  }
     </style>
     <link rel="stylesheet" href="https://js.arcgis.com/4.9/esri/css/main.css">
     <script src="https://js.arcgis.com/4.9/"></script>
+
 
     <script>
       require([
@@ -23,19 +31,31 @@
         "esri/tasks/RouteTask",
         "esri/tasks/support/RouteParameters",
         "esri/tasks/support/FeatureSet",
-        "dojo/domReady!"
-      ], function(Map, MapView, Search, Graphic, RouteTask, RouteParameters, FeatureSet) {
+        "esri/widgets/Directions",
+        "esri/widgets/ScaleBar",
+        "dojo/domReady!",
+        ], function(Map, MapView, Search, Graphic, RouteTask, RouteParameters, FeatureSet, Directions, ScaleBar) {
 
           var map = new Map({
-            basemap: "topo-vector"
+            basemap: "streets-navigation-vector"
           });
 
           var view = new MapView({
             container: "viewDiv",
             map: map,
             center: [-118.71511,34.09042],
-            zoom: 10
+            zoom: 10,
+            padding: {
+              right: 320
+            }
           });
+
+        //Widget de paradas
+        var directions = new Directions({
+            view: view
+          });
+          view.ui.add(directions, "top-right");
+          
 
           // Add Search widget
           var search = new Search({
@@ -43,14 +63,23 @@
           });
           view.ui.add(search, "top-right"); // Add to the map
 
-
+          var scaleBar = new ScaleBar({
+          view: view
+          });
+          // Add widget to the bottom left corner of the view
+          view.ui.add(scaleBar, {
+            position: "bottom-left"
+          });
+          
           var routeTask = new RouteTask({
          url: "https://route.arcgis.com/arcgis/rest/services/World/Route/NAServer/Route_World"
       });
 
       view.on("click", function(event){
+        console.log(directions.getDirections());
         if (view.graphics.length === 0) {
           addGraphic("start", event.mapPoint);
+          
         } else if (view.graphics.length === 1) {
           addGraphic("finish", event.mapPoint);
           // Call the route service
@@ -128,3 +157,4 @@
     <div id="viewDiv"></div>
   </body>
 </html>
+
